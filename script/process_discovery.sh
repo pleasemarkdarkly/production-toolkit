@@ -2,6 +2,8 @@
 #!/bin/bash
 # Bash Menu Script Example
 
+source show_spinner.sh
+
 #@TODO
 #@TODO  after creating tiffs, move originals into PDF folder
 #@TODO  save encryption password to file, and error function unless it has been created
@@ -18,12 +20,12 @@ HEIGHT=40
 WIDTH=100
 CHOICE_HEIGHT=15
 BACKTITLE="ASSHOLE LITIGATION TOOL"
-TITLE="ASSHOLE LITIGATION TOOL"
+TITLE="ASSHOLE LITIGATION TOOL: $(Date)"
 MENU="Choose one of the following options:"
 
 OPTIONS=(1 "Rename all files by MD5-hash (c45144ab5~64fe4db.pdf)"
          2 "Convert PDFs to TIFFs (c4514a5~f644db.pdf-001.TIFF-.pdf-002.TIFF...)(10MB)"
-         3 "Rotate TIFFs 183 degrees"
+         3 "Rotate TIFFs 90 degrees"
          4 "Watermark TIFFs with Statement (scripts/watermark.txt)"
          5 "List Files"
          6 "Create encryption key (scripts/encryption_key.txt)"
@@ -50,12 +52,11 @@ function change_tiff_res () {
   set RES_CONFIGURATION=RES_ONEHUNDREDMB
 }
 
-ENCR_PASSWORD="Imaging Computers That You Don't Own Is Illegal"
-
-
+ENCR_PASSWORD="MvPwpSuCJqqRLxPhgzKrtkzMVLWsWFmLn58w59hQauHWyDxVHNBFC4HSg5QRGgVTa9AC3b5wLUyFtNApJhzZGmf9N6DcZputdp7yHMuTvDH9bgtC"
 
 function convert_pdfs_to_tiffs () {
   echo "function convert pdfs to tiffs"
+  echo
   echo "listing pdfs to consider"
   echo
   colorls -al --report *.pdf
@@ -64,12 +65,25 @@ function convert_pdfs_to_tiffs () {
   echo
   set RES_CONFIGURATION=${RES_TENMB}
   echo "resolution set to: ${RES_CONFIGURATION}"
-  #read -n 1 -s -r -p "Press any key to continue PDF to TIFF"
-  find . -name *.pdf -exec time gs -q -dCOLORSCREEN -dDITHERPPI=20 -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dNOSUBSTDEVICECOLORS \
-  -sDEVICE=tiff24nc "${RES_CONFIGURATION}" -dBATCH -sNOPAUSE -sPAPERSIZE=a4 -sOutputFile="{}-%03d.TIFF" "{}" \;
-
-  mkdir "Originals"
-  mv *.pdf Originals
+  echo
+  echo "let's help the other party by making these files super high resolution, and required special A4 paper..."
+  echo
+  echo "you have two seconds to cancel..."; sleep 2
+  find . -name '*.pdf' -exec time gs -q -dCOLORSCREEN -dDITHERPPI=20 -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dNOSUBSTDEVICECOLORS \
+  -sDEVICE=tiff24nc "${RES_CONFIGURATION}" -dBATCH -sNOPAUSE -sPAPERSIZE=a4 -sOutputFile="{}-%03d.TIFF" ""{}"" \;
+  find . -name '*.PDF' -exec time gs -q -dCOLORSCREEN -dDITHERPPI=20 -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dNOSUBSTDEVICECOLORS \
+  -sDEVICE=tiff24nc "${RES_CONFIGURATION}" -dBATCH -sNOPAUSE -sPAPERSIZE=a4 -sOutputFile="{}-%03d.TIFF" ""{}"" \;
+  echo
+  echo "removing the pdfs....we don't need them anymore..."
+  echo
+  rm -v *.pdf; rm -v *.PDF;
+  echo
+  echo "lets list out all our new TIFFs..."
+  colorls -al --report *.TIFF
+  echo
+  echo "you have two seconds to review...before returning to main menu..."
+  sleep 2
+  ../script/process_discovery.sh
 }
 
 FILE_COUNT=0
@@ -77,14 +91,50 @@ FILE_COUNT=0
 function rotate_tiffs_one_sixty () {
   echo "rotating tiffs onesixy" \;
   FILE_COUNT=`ls -1 *.TIFF 2>/dev/null | wc -l`
-  read -n 1 -s -r -p "Press any key to continue ROTATE 185 degrees"
+  #read -n 1 -s -r -p "Press any key to continue ROTATE 185 degrees"
   mogrify -verbose -rotate 185 *.TIFF
   ls -al *.TIFF~
   echo 'removing temporary files'
   rm -v *.TIFF~
   echo 'current image files left'
-  ls -al
+  ls *.TIFF
+  ../script/process_discovery.sh
 }
+
+function rotate_tiffs_one_eighty () {
+  echo "rotating tiffs one eighty" \;
+  FILE_COUNT=`ls -1 *.TIFF 2>/dev/null | wc -l`
+  #read -n 1 -s -r -p "Press any key to continue ROTATE 185 degrees"
+  mogrify -verbose -rotate 180 *.TIFF
+  ls -al *.TIFF~
+  echo 'removing temporary files'
+  rm -v *.TIFF~
+  echo 'current image files left'
+  ls *.TIFF
+  ../script/process_discovery.sh
+}
+
+function rotate_tiffs_ninety () {
+  echo "rotating tiffs sideways" \;
+  FILE_COUNT=`ls -1 *.TIFF 2>/dev/null | wc -l`
+  echo
+  mogrify -verbose -rotate 90 *.TIFF
+  echo
+  colorls --al --report
+  echo
+  echo "removing temporary TIFF~ files"
+  echo
+  rm -v *.TIFF~
+  echo
+  echo 'cleaned up directory...'
+  colorls
+  echo
+  echo "review files..."
+  open .
+  echo "you have five seconds before return to menu"
+  ../script/process_discovery.sh
+}
+
 
 function create_watermark_file () {
   dialog --inputbox "Enter Watermark Phase:" 8 40 2>script/watermark.txt
@@ -94,19 +144,31 @@ WATERMARK_DEFAULT='SCHWEICKERT CASE No. 18-3-01411-9 SEA KEANE'
 
 function watermark_tiffs_with_statement () {
   echo "watermarking tiffs with statement"
-
-  #read -n 1 -s -r -p "Press any key to continue WATERMARKING FILES"
-  if [ -f script/watermark.txt ]; then
-    WATERMARK_DEFAULT="$(cat script/watermark.txt)"
-    list='find . -name *.TIFF'
+  echo "lets fetch it from file:"
+  cat ../script/watermark.txt
+  echo
+  if [ -f ../script/watermark.txt ]; then
+    WATERMARK_DEFAULT="$(cat ../script/watermark.txt)"
+    list="find . -name *.TIFF -o -name '*.tiff'"
     for F in ${list}; do convert ${F} -verbose -font Arial -pointsize 100 -draw \
     "gravity south fill black text 0,12 '${WATERMARK_DEFAULT}' \
     fill white text 1,11 '' " \
     ${F}; done
-    ls -al
+    echo
+    echo "watermark complete"
+    echo "listing out the processed files..."
+    colorls -al --report
+    echo
   else
     create_watermark_file
   fi
+  echo
+  echo "check watermarks manually by clicking on the file..."
+  open .
+  echo
+  echo "sleeping for 5 seconds while you check out the files..."
+  sleep 5
+  ../script/process_discovery.sh
 }
 
 function calculate_md5_hash () {
@@ -114,43 +176,97 @@ function calculate_md5_hash () {
   for F in $DIR*.*; do echo "$F" "$(md5 "$F" | cut -d' ' -f4).${F##*.}"; done
 }
 
+function remove_whitespace () {
+  for f in *\ *; do mv "$f" "${f// /_}"; done
+}
+
 function calculate_md5_hash_rename_file () {
-  echo "renaming all files to md5"
-  mkdir Originals
-  # don't forget to remove mv originals so we don't duplicate and super increase size of production
-  for F in $DIR*.pdf; do cp -rv "$F" "$(md5 "$F" | cut -d' ' -f4).${F##*.}"; mv -v "$F" Originals; done
   echo
+  colorls -al --report
+  sleep 2
+  echo
+  echo "renaming all files to md5"
+  echo
+  sleep 1
+  echo
+  echo "fix any files with spaces in it";   remove_whitespace;
+  echo
+  echo "whitespaces gone"
+  sleep 1
+  echo
+  colorls -al --report
+  echo
+  sleep 1
+  echo "computer file md5 hash and replace filename..."
+  echo
+  #preserves filename and adds the hash
+  #find . -name '*.pdf' -exec bash -c 'mv $1 "${1%.*}.$(md5 -q $1).${1##*.}"' bash {} \;
+  #find . -name '*.PDF' -exec bash -c 'mv $1 "${1%.*}.$(md5 -q $1).${1##*.}"' bash {} \;
+  echo "two seconds to cancel..."; sleep 2
+  #why give away the filename and make it easy to organize documents?
+  # replace the name of the file with the md5hash
+  find . -name '*.pdf' -exec bash -c 'mv $1 "$(md5 -q $1).${1##*.}"' bash {} \;
+  find . -name '*.PDF' -exec bash -c 'mv $1 "$(md5 -q $1).${1##*.}"' bash {} \;
+  echo
+  echo "md5 hash renaming complete..."
+  echo
+  colorls -al --report
+  echo
+  sleep 1
+  ../script/process_discovery.sh
 }
 
 function create_encryption_password () {
-  dialog --inputbox "Enter an encryption key:" 8 40 2>script/encryption_key.txt
-  echo "writing encryption password to file: script/encryption_key.txt"
-  cat script/encryption_key.txt
+  dialog --inputbox "Enter an encryption key:" 8 40 2>../script/encryption_key.txt
+  echo "writing encryption password to file: ../script/encryption_key.txt"
+  echo
+  cat ../script/encryption_key.txt
+  echo
+  ../script/process_discovery.sh
 }
 
 function encrypt_all_tiffs () {
   echo "encrypting all tiffs with password"
-  if [ -f script/encryption_key.txt ]; then
-    echo "encription_key set applying...."
-    echo "proceeding with encryption"
-    for i in *.TIFF; do echo "applying encryption key to $i"; time 7z a $i.7z -p"$(cat script/encryption_key.txt)" -mhe $i; done
+  echo
+  echo "key is defined as..."
+  echo
+  cat ../script/encryption_key.txt
+  echo
+  echo
+  if [ -f ../script/encryption_key.txt ]; then
+    for i in *.TIFF; do echo "applying encryption key to $i"; time 7z a $i.7z -p"$(cat ../script/encryption_key.txt)" -mhe $i; done
+    echo "removing *.TIFFs"
+    echo
     rm -v *.TIFF
+    echo
     colorls -al --report
+    echo
+    echo "listing final compressed 7z/password protected files..."
+    sleep 5
   else
+    echo "ask user to provide a key since none exists"
     create_encryption_password
   fi
+  echo "return to menu"
+  sleep 2
+  ../script/process_discovery.sh
 }
 
 function decrypt_all_tiffs () {
   echo "decrypting all tiffs with password"
-  if [ -f script/encryption_key.txt ]; then
+  if [ -f ../script/encryption_key.txt ]; then
     echo "proceeding with dencryption"
-    for i in *.7z; do echo "applying dencryption key to $i"; time 7z x $i -p"$(cat script/encryption_key.txt)"; done
+    echo "decrypting/decompressing with:"
+    cat ../script/encryption_key.txt
+    echo
+    for i in *.7z; do echo "applying dencryption key to $i"; time 7z x $i -p"$(cat ../script/encryption_key.txt)"; done
     rm -v *.7z
     colorls -al --report
+    sleep 1
   else
     create_encryption_password
   fi
+  ../script/process_discovery.sh
 }
 
 function package_files () {
@@ -162,16 +278,25 @@ function wipe_all_tiff_metadata () {
   for i in *.TIFF; do echo "wiping metadata from $i"; exiftool -all= "$i"; done
   echo "removing the autobackup .originals"
   rm -v *_original
+  ../script/process_discovery.sh
 }
 
 function list_files_viewing () {
-  echo "list files"
+  echo
+  echo "listing files..."
   colorls -al --report
+  echo
+  echo "five seconds to review..."
+  sleep 5
+  echo
+  ../script/process_discovery.sh
 }
 
 function explain_shit () {
   dialog --title "Asshole Litigation Toolkit" --infobox \
-  "`cat script/about.txt`" 70 150
+  "`cat ../script/about.txt`" 70 150
+  sleep 15
+  #../script/process_discovery.sh
 }
 
 function process_user_commands () {
@@ -192,7 +317,7 @@ CHOICE=$(dialog --clear \
               convert_pdfs_to_tiffs
               ;;
           3)
-              rotate_tiffs_one_sixty
+              rotate_tiffs_ninety
               ;;
           4)
               watermark_tiffs_with_statement
