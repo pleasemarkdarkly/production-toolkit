@@ -19,7 +19,7 @@ source show_spinner.sh
 HEIGHT=40
 WIDTH=100
 CHOICE_HEIGHT=15
-BACKTITLE="ASSHOLE LITIGATION TOOL"
+BACKTITLE="ASSHOLE LITIGATION TOOLKIT"
 TITLE="ASSHOLE LITIGATION TOOL: $(Date)"
 MENU="Choose one of the following options:"
 
@@ -27,7 +27,7 @@ OPTIONS=(1 "Rename all files by MD5-hash (c45144ab5~64fe4db.pdf)"
          2 "Convert PDFs to TIFFs (c4514a5~f644db.pdf-001.TIFF-.pdf-002.TIFF...)(10MB)"
          3 "Rotate TIFFs 90 degrees"
          4 "Watermark TIFFs with Statement (scripts/watermark.txt)"
-         5 "List Files"
+         5 "Convert TIFFs to PDFs"
          6 "Create encryption key (scripts/encryption_key.txt)"
          7 "Wipe All Metadata from TIFFs (exiftool)"
          8 "Encrypt/Compress TIFF files with (script/encryption_key.txt) (7z)"
@@ -46,13 +46,38 @@ RES_FOURHUNDREDMB="-r1200x1200"
 RES_ONEHUNDREDMB="-r600x600"
 RES_EIGHTEENMB="-r300x300"
 RES_TENMB="-r150x150"
-RES_CONFIGURATION="-r450x450"
+RES_CONFIGURATION="-r200x200"
 
 function change_tiff_res () {
   set RES_CONFIGURATION=RES_ONEHUNDREDMB
 }
 
 ENCR_PASSWORD="MvPwpSuCJqqRLxPhgzKrtkzMVLWsWFmLn58w59hQauHWyDxVHNBFC4HSg5QRGgVTa9AC3b5wLUyFtNApJhzZGmf9N6DcZputdp7yHMuTvDH9bgtC"
+
+function convert_tiffs_to_pdfs () {
+  echo "function to convert tiffs to pdfs"
+  echo
+  echo "listing all *.tiffs to consider"
+  colorls -al --report *.TIFF;
+  echo
+  echo "number of tiffs to be processed: " $(ls -al *.TIFF | wc -l)
+  echo
+  echo "you have two seconds to cancel..."; sleep 2
+  echo
+  mogrify -verbose -format pdf *.TIFF
+  echo
+  echo "now removing the TIFFs"
+  rm -v *.TIFF;
+  echo
+  echo "let's list the pdfs that were created"
+  echo
+  colorls -al --report *.TIFF;
+  echo
+  echo "you have 2 seconds to review before returning to menu"
+  sleep 2
+  echo
+  ../script/process_discovery.sh
+}
 
 function convert_pdfs_to_tiffs () {
   echo "function convert pdfs to tiffs"
@@ -140,7 +165,7 @@ function create_watermark_file () {
   dialog --inputbox "Enter Watermark Phase:" 8 40 2>script/watermark.txt
 }
 
-WATERMARK_DEFAULT='SCHWEICKERT CASE No. 18-3-01411-9 SEA KEANE'
+WATERMARK_DEFAULT='PARTY VS PARTY CASE NO 123456-789'
 
 function watermark_tiffs_with_statement () {
   echo "watermarking tiffs with statement"
@@ -150,8 +175,8 @@ function watermark_tiffs_with_statement () {
   if [ -f ../script/watermark.txt ]; then
     WATERMARK_DEFAULT="$(cat ../script/watermark.txt)"
     list="find . -name *.TIFF -o -name '*.tiff'"
-    for F in ${list}; do convert ${F} -verbose -font Arial -pointsize 100 -draw \
-    "gravity south fill black text 0,12 '${WATERMARK_DEFAULT}' \
+    for F in ${list}; do convert ${F} -verbose -font Arial -pointsize 30 -draw \
+    "gravity south fill black text 0,8 '${WATERMARK_DEFAULT}' \
     fill white text 1,11 '' " \
     ${F}; done
     echo
@@ -323,7 +348,7 @@ CHOICE=$(dialog --clear \
               watermark_tiffs_with_statement
               ;;
           5)
-              list_files_viewing
+              convert_tiffs_to_pdfs
               ;;
           6)
               create_encryption_password

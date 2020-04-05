@@ -1,16 +1,18 @@
-Welcome to Asshole Litigation Toolkit.
+## Litigation Production Scripts
 
-This toolkit allows the attorney or paralegal to prepare production in a special packaged with care manner.  There is nothing illegal about how to this program works, but it may make for some annoying attorney interactions.
+This is a script which takes a folder of PDFs and makes super annoying images. It is intended to be used when producing discovery to opposing parties.  
 
-The main working directory should be where you place your PDF files. The originals will be backup into Originals, the processing script and helper files watermark and encyrption_key are saved here for providing to the other party.
+The output of this script conforms with King County Superior Court Rules as well as Federal Discovery Rules. 
+
+The main working directory should be where you place your PDF files. The originals will be backup into Originals, the processing script and helper files watermark and encyrption_key are saved here to provide to the other party.
 
 The first function takes the PDF and extracts each page as a separate 10MB TIFF. Each TIFF can be configured to different DPI from 100MB to 1MB. The image/page is also forced color rendering, interpolated, A4 page size change, and will tax your computer, network, and printer if printed.
 
 The next function will change the PDF titles to a MD5HASH, for example: c45144ab58acb36c4f6aeea5f64fe4db.pdf when the page convertion occurs, the program will number each page to the corresponding MD5HASH as to group the file together, for example: c45144ab58acb36c4f6aeea5f64fe4db.pdf-004.TIFF.  You can comment this out if you want all the files and pages to be intermixed in a large directory.
 
-The next function will remove all file metadata so the history, file type, and any author information is removed completely.
+The next function will remove all file metadata so the history, file type, and any author completely.
 
-If you want to apply two watermarks to the top and the bottom then you can apply the watermark step now. You can set you text to be what you want and it will be saved in scripts. A rotate function will rotate the TIFF 186 degree. This makes 180 rotations not automatic and any OCRing will have to rotate the image again in all angles to try to detect any glyphs. After the file is rotated, then you can also rerun the watermark to set the bottom information.
+If you want to apply two watermarks to the top and the bottom then you can apply the watermark step now. You can set you set the text to be what you want and it will be saved in the scripts. A rotate function will rotate the TIFF 186 degree. This makes 180 rotations not automatic and any OCRing will have to rotate the image again in all angles to try to detect any glyphs. After the file is rotated, then you can also rerun the watermark to set the bottom information.
 
 The next function of setting an encryption key will designate the AES file level encryption and save the key to scripts/encryption_key.txt - recommend to make this long and full of alternating characters for example.
 
@@ -20,10 +22,14 @@ The encryption is applied during the 7z compression step.  Doing the compression
 
 Finally, this tool has a decryption step for testing your production masterpiece. One more thing, you can use this message below to communicate to the other party how to access these files.
 
-
 To defendant/plantiff and counsel,
 
 Included in this letter are our responses to your request for production. The files have been processed in the following manner. We have high quality/resolution TIFF files which are generally named by the MD5HASH of the file as to ensure the file integrity. The following -001-0010.TIFF are the pages from the same document. The files have been individually compressed and password protected for any unforeseen data leaks or network intrusion which you may have had an not reported or otherwise secured 3rd party inforamtion. Finally, the files were also watermarked with the case number, your firm's name/information so that with the MD5HASH and the watermark verify the production or future evidence you may submit was from a legal source - and not illegally accessed, acquired or otherwise stolen.
 
 The password for this production is as follows:
 Xbox Eight Seven Xbox YOU Umbrella NUT Four Seven YOU Rope COMPUTER Shoot QUESTION SHOOT Rope XBOX Jack POLYESTER Hero Five Question Music APPLE Technology Shoot Six Four Nut APPLE Xbox KOREAN You Fruit Seven Nine Zigzag Xbox Three Gallery Music Five KOREAN Question KOREAN Drip Rope You Eight Five
+
+
+## Prereqs
+
+There are a number of programs that need to be installed first, look at the script to see which. However, it should work on a modern MacOS just fine.

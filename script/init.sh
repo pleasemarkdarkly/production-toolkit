@@ -1,8 +1,7 @@
 echo 'cleaning test folder'
 
-
 function list () {
-	colorls -al --report 
+	colorls -al --report
 }
 
 read -p "Do you want to delete all .TFFs?" yn

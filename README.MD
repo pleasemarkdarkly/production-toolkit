@@ -1,0 +1,1 @@
+Put a folder on the top level with scripts and run ,./script/processs_directory.sh to run through the various scripts. Use Originals to test a few files, and video is an attempt to record the work examples for github. 
